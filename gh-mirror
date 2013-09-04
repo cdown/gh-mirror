@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+"""
+Mirror all GitHub repositories for a user, maintaining metadata.
+
+This can be useful when maintaining a local mirror.
+"""
+
+from __future__ import print_function
+import os
+import requests
+import subprocess
+import sys
+
+
+def repos(user):
+    """
+    Get all of the repositories for a user.
+
+    :param user: the user to get the repositories for
+    :returns: a list of description/url dicts
+    """
+
+    res_handle = requests.get("https://api.github.com/users/%s/repos" % user)
+    res_json = res_handle.json()
+
+    for repo in res_json:
+        yield {
+            "description": repo["description"],
+            "url":         repo["git_url"],
+        }
+
+
+def _repo_already_mirrored(url):
+    """
+    Check if a repo is already mirrored.
+
+    :param url: the url for the repo
+    :returns: a bool denoting whether the dir for this repo exists
+    """
+
+    repo_dir = os.path.basename(url)
+    return os.path.isdir(repo_dir)
+
+
+def update(repo):
+    """
+    Update a local mirror.
+
+    :param repo: information about this repo
+    """
+
+    repo_dir = os.path.basename(repo["url"])
+    os.chdir(repo_dir)
+    subprocess.check_call(["git", "remote", "update"])
+    os.chdir("..")
+
+
+def mirror(repo):
+    """
+    Mirror a Git repository, maintaining metadata.
+
+    :param repo: information about the repo to mirror
+    """
+
+    subprocess.check_call(["git", "clone", "--mirror", repo["url"]])
+
+    clone_dir = os.path.basename(repo["url"])
+    description_file = os.path.join(clone_dir, "description")
+
+    with open(description_file, "w") as f:
+        f.write(repo["description"] + "\n")
+
+
+def update_or_mirror_repos(user):
+    """
+    For each repo by a user, either update it if it is already mirrored, or
+    mirror it.
+
+    :param user: the user to get the repositories for
+    """
+
+    user_repos = repos(user)
+
+    for repo in user_repos:
+        if _repo_already_mirrored(repo["url"]):
+            update(repo)
+        else:
+            mirror(repo)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: %s username" % os.path.basename(sys.argv[0]))
+        sys.exit(1)
+
+    user = sys.argv[1]
+    update_or_mirror_repos(user)
