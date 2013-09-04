@@ -53,6 +53,7 @@ def update(repo):
     repo_dir = os.path.basename(repo["url"])
     os.chdir(repo_dir)
     subprocess.check_call(["git", "remote", "update"])
+    update_description("description", repo["description"])
     os.chdir("..")
 
 
@@ -68,8 +69,19 @@ def mirror(repo):
     clone_dir = os.path.basename(repo["url"])
     description_file = os.path.join(clone_dir, "description")
 
+    update_description(description_file, repo["description"])
+
+
+def update_description(description_file, description):
+    """
+    Update a description file for a git repo.
+
+    :param description_file: the path to the description file
+    :param description: the description for this repo
+    """
+
     with open(description_file, "w") as f:
-        f.write(repo["description"] + "\n")
+        f.write(description + "\n")
 
 
 def update_or_mirror_repos(user):
