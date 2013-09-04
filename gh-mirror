@@ -7,11 +7,15 @@ This can be useful when maintaining a local mirror.
 """
 
 from __future__ import print_function
+import json
 import os
-import requests
 import subprocess
 import sys
 
+try:
+    from urllib.request import urlopen
+except ImportError:  # Python 2 fallback
+    from urllib import urlopen
 
 def repos(user):
     """
@@ -21,8 +25,9 @@ def repos(user):
     :returns: a list of description/url dicts
     """
 
-    res_handle = requests.get("https://api.github.com/users/%s/repos" % user)
-    res_json = res_handle.json()
+    res_handle = urlopen("https://api.github.com/users/%s/repos" % user)
+    res_encoding = "utf8"
+    res_json = json.loads(res_handle.read().decode(res_encoding))
 
     for repo in res_json:
         yield {
