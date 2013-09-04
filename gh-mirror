@@ -91,7 +91,10 @@ def update_or_mirror_repos(user):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: %s username" % os.path.basename(sys.argv[0]))
+        print(
+            "Usage: %s username" % os.path.basename(sys.argv[0]),
+            file=sys.stderr
+        )
         sys.exit(1)
 
     user = sys.argv[1]
