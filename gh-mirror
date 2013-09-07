@@ -59,6 +59,7 @@ def update(repo):
     os.chdir(repo_dir)
     subprocess.check_call(["git", "remote", "update"])
     update_description("description", repo["description"])
+    export("git-daemon-export-ok")
     os.chdir("..")
 
 
@@ -73,9 +74,19 @@ def mirror(repo):
 
     clone_dir = os.path.basename(repo["url"])
     description_file = os.path.join(clone_dir, "description")
+    export_file = os.path.join(clone_dir, "git-daemon-export-ok")
 
     update_description(description_file, repo["description"])
+    export(export_file)
 
+def export(export_file):
+    """
+    Mark a repository as exportable.
+
+    :param export_file: the path to the git-daemon-export-ok file
+    """
+
+    open(export_file, "a").close()
 
 def update_description(description_file, description):
     """
