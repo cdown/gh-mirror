@@ -97,7 +97,7 @@ def update_description(description_file, description):
     """
 
     with open(description_file, "w") as f:
-        f.write(description + "\n")
+        f.write(description.encode("utf8") + "\n")
 
 
 def update_or_mirror_repos(user):
