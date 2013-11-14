@@ -7,6 +7,7 @@ This can be useful when maintaining a local mirror.
 """
 
 from __future__ import print_function
+import itertools
 import json
 import os
 import subprocess
@@ -25,16 +26,21 @@ def repos(user):
     :returns: a list of description/url dicts
     """
 
-    res_handle = urlopen("https://api.github.com/users/%s/repos" % user)
-    res_encoding = "utf8"
-    res_json = json.loads(res_handle.read().decode(res_encoding))
+    for page in itertools.count(start=1):
+        res_handle = urlopen(
+            "https://api.github.com/users/%s/repos?page=%d" % (user, page)
+        )
+        res_encoding = "utf8"
+        res_json = json.loads(res_handle.read().decode(res_encoding))
 
-    for repo in res_json:
-        yield {
-            "description": repo["description"],
-            "url":         repo["git_url"],
-        }
+        if not res_json:
+            break
 
+        for repo in res_json:
+            yield {
+                "description": repo["description"],
+                "url":         repo["git_url"],
+            }
 
 def _repo_already_mirrored(url):
     """
