@@ -96,8 +96,8 @@ def update_description(description_file, description):
     :param description: the description for this repo
     """
 
-    with open(description_file, "w") as f:
-        f.write(description.encode("utf8") + "\n")
+    with open(description_file, "wb") as f:
+        f.write(description.encode("utf8") + b"\n")
 
 
 def update_or_mirror_repos(user):
