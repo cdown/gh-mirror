@@ -10,6 +10,7 @@ from __future__ import print_function
 import itertools
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -109,22 +110,41 @@ def update_description(description_file, description):
     with open(description_file, "wb") as f:
         f.write(description.encode("utf8") + b"\n")
 
+def _remotely_deleted_repos(remote_repos):
+    """
+    Return a list of all repos existing locally, but not remotely.
 
-def update_or_mirror_repos(user):
+    :param remote_repos: the names of all repos to check
+    """
+
+    files = os.listdir(".")
+
+    local_repos = [x for x in files if x.endswith(".git") and x != ".git"]
+    remote_repo_urls = [remote_repo["url"] for remote_repo in remote_repos]
+    remote_repos = [url.split("/")[-1] for url in remote_repo_urls]
+    return [repo for repo in local_repos if repo not in remote_repos]
+
+def update_or_mirror_repos(user, delete=False):
     """
     For each repo by a user, either update it if it is already mirrored, or
     mirror it.
 
     :param user: the user to get the repositories for
+    :param delete: delete remotely deleted repositories from our local mirror
     """
 
-    user_repos = repos(user)
+    user_repos = list(repos(user))
 
     for repo in user_repos:
         if _repo_already_mirrored(repo["url"]):
             update(repo)
         else:
             mirror(repo)
+
+    if delete:
+        remotely_deleted_repos = _remotely_deleted_repos(user_repos)
+        for remotely_deleted_repo in remotely_deleted_repos:
+            shutil.rmtree(remotely_deleted_repo)
 
 
 if __name__ == "__main__":
@@ -136,4 +156,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     user = sys.argv[1]
-    update_or_mirror_repos(user)
+    update_or_mirror_repos(user, delete=False)
