@@ -45,7 +45,7 @@ def repos(user):
             }
 
 
-def _repo_already_mirrored(url):
+def repo_already_mirrored(url):
     """
     Check if a repo is already mirrored.
 
@@ -108,7 +108,7 @@ def description(description_file, description):
     with open(description_file, "wb") as f:
         f.write(description.encode("utf8") + b"\n")
 
-def _remotely_deleted_repos(remote_repos):
+def remotely_deleted_repos(remote_repos):
     """
     Return a list of all repos existing locally, but not remotely.
 
@@ -134,15 +134,15 @@ def update_or_mirror_repos(user, delete=False):
     user_repos = list(repos(user))
 
     for repo in user_repos:
-        if _repo_already_mirrored(repo["url"]):
+        if repo_already_mirrored(repo["url"]):
             update(repo)
         else:
             mirror(repo)
 
     if delete:
-        remotely_deleted_repos = _remotely_deleted_repos(user_repos)
-        for remotely_deleted_repo in remotely_deleted_repos:
-            shutil.rmtree(remotely_deleted_repo)
+        repos_to_delete = remotely_deleted_repos(user_repos)
+        for repo in repos_to_delete:
+            shutil.rmtree(repo)
 
 
 if __name__ == "__main__":
