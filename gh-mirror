@@ -79,9 +79,9 @@ def mirror(repo):
 
     subprocess.check_call(["git", "clone", "--mirror", repo["url"]])
 
-    clone_dir = os.path.basename(repo["url"])
-    description_file = os.path.join(clone_dir, "description")
-    export_file = os.path.join(clone_dir, "git-daemon-export-ok")
+    repo_dir = os.path.basename(repo["url"])
+    description_file = os.path.join(repo_dir, "description")
+    export_file = os.path.join(repo_dir, "git-daemon-export-ok")
 
     description(description_file, repo["description"])
     export(export_file)
