@@ -65,11 +65,9 @@ def update(repo):
     """
 
     repo_dir = os.path.basename(repo["url"])
-    os.chdir(repo_dir)
-    subprocess.check_call(["git", "remote", "update"])
-    update_description("description", repo["description"])
-    export("git-daemon-export-ok")
-    os.chdir("..")
+    subprocess.check_call(["git", "--git-dir", repo_dir, "remote", "update"])
+    description(os.path.join(repo_dir, "description"), repo["description"])
+    export(os.path.join(repo_dir, "git-daemon-export-ok"))
 
 
 def mirror(repo):
@@ -85,7 +83,7 @@ def mirror(repo):
     description_file = os.path.join(clone_dir, "description")
     export_file = os.path.join(clone_dir, "git-daemon-export-ok")
 
-    update_description(description_file, repo["description"])
+    description(description_file, repo["description"])
     export(export_file)
 
 
@@ -99,7 +97,7 @@ def export(export_file):
     open(export_file, "a").close()
 
 
-def update_description(description_file, description):
+def description(description_file, description):
     """
     Update a description file for a git repo.
 
