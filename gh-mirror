@@ -105,8 +105,9 @@ def description(description_file, description):
     :param description: the description for this repo
     """
 
-    with open(description_file, "wb") as f:
-        f.write(description.encode("utf8") + b"\n")
+    if description is not None:
+        with open(description_file, "wb") as f:
+            f.write(description.encode("utf8") + b"\n")
 
 def remotely_deleted_repos(remote_repos):
     """
