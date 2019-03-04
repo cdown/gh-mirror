@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import sys
+import argparse
 
 try:
     from urllib.request import urlopen
@@ -121,11 +122,22 @@ def remotely_deleted_repos(remote_repos):
     remote_repos = [url.split("/")[-1] for url in remote_repo_urls]
     return [repo for repo in local_repos if repo not in remote_repos]
 
+def matches_excludes(url, excludes):
+    """
+    Return if this URL matches an exclude.
 
-def update_or_mirror_repos(user, delete=False):
+    :param url: The URL to theck
+    :param excludes: Basenames to return True if matching
+    """
+
+    base = os.path.basename(url)
+    base_without_git = os.path.splitext(base)[0]
+    return base in excludes or base_without_git in excludes
+
+def update_or_mirror_repos(user, excludes, delete=False):
     """
     For each repo by a user, either update it if it is already mirrored, or
-    mirror it.
+    mirror it
 
     :param user: the user to get the repositories for
     :param delete: delete remotely deleted repositories from our local mirror
@@ -134,7 +146,13 @@ def update_or_mirror_repos(user, delete=False):
     user_repos = list(repos(user))
 
     for repo in user_repos:
-        if repo_already_mirrored(repo["url"]):
+        url = repo["url"]
+
+        if matches_excludes(url, excludes):
+            print("Skipping {} as it matches an exclude".format(url))
+            continue
+
+        if repo_already_mirrored(url):
             update(repo)
         else:
             mirror(repo)
@@ -144,11 +162,12 @@ def update_or_mirror_repos(user, delete=False):
         for repo in repos_to_delete:
             shutil.rmtree(repo)
 
+def parse_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-e", "--exclude", action="append", help="repo names to exclude", default=[])
+    parser.add_argument("username", help="the user's repos to mirror")
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: %s username" % os.path.basename(sys.argv[0]), file=sys.stderr)
-        sys.exit(1)
-
-    user = sys.argv[1]
-    update_or_mirror_repos(user, delete=False)
+    args = parse_args()
+    update_or_mirror_repos(args.username, excludes=args.exclude, delete=False)
