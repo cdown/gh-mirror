@@ -40,7 +40,7 @@ def repos(user):
             break
 
         for repo in res_json:
-            yield {"description": repo["description"], "url": repo["git_url"]}
+            yield {"description": repo["description"], "url": repo["clone_url"]}
 
 
 def repo_already_mirrored(url):
