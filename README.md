@@ -17,16 +17,6 @@ Cloning into bare repository 'bats.git'...
 
 [blog]: https://chrisdown.name/2013/07/05/setting-up-local-github-mirror-with-cgit-git-daemon.html
 
-## Testing
-
-[![Build status][travis-image]][travis-builds]
-
-    $ pip install nose
-    $ nosetests
-
-[travis-builds]: https://travis-ci.org/cdown/gh-mirror
-[travis-image]: https://travis-ci.org/cdown/gh-mirror.png?branch=master
-
 ## License
 
 gh-mirror is [ISC licensed][isc]. See the LICENSE file for full details.
