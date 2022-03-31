@@ -40,7 +40,8 @@ def repos(user):
             break
 
         for repo in res_json:
-            yield {"description": repo["description"], "url": repo["clone_url"]}
+            yield repo
+
 
 
 def repo_already_mirrored(url):
@@ -62,7 +63,7 @@ def update(repo):
     :param repo: information about this repo
     """
 
-    repo_dir = os.path.basename(repo["url"])
+    repo_dir = os.path.basename(repo["clone_url"])
     subprocess.check_call(["git", "--git-dir", repo_dir, "remote", "update"])
     description(os.path.join(repo_dir, "description"), repo["description"])
     export(os.path.join(repo_dir, "git-daemon-export-ok"))
@@ -75,9 +76,9 @@ def mirror(repo):
     :param repo: information about the repo to mirror
     """
 
-    subprocess.check_call(["git", "clone", "--mirror", repo["url"]])
+    subprocess.check_call(["git", "clone", "--mirror", repo["clone_url"]])
 
-    repo_dir = os.path.basename(repo["url"])
+    repo_dir = os.path.basename(repo["clone_url"])
     description_file = os.path.join(repo_dir, "description")
     export_file = os.path.join(repo_dir, "git-daemon-export-ok")
 
@@ -118,7 +119,7 @@ def remotely_deleted_repos(remote_repos):
     files = os.listdir(".")
 
     local_repos = [x for x in files if x.endswith(".git") and x != ".git"]
-    remote_repo_urls = [remote_repo["url"] for remote_repo in remote_repos]
+    remote_repo_urls = [remote_repo["clone_url"] for remote_repo in remote_repos]
     remote_repos = [url.split("/")[-1] for url in remote_repo_urls]
     return [repo for repo in local_repos if repo not in remote_repos]
 
@@ -146,7 +147,7 @@ def update_or_mirror_repos(user, excludes, delete=False):
     user_repos = list(repos(user))
 
     for repo in user_repos:
-        url = repo["url"]
+        url = repo["clone_url"]
 
         if matches_excludes(url, excludes):
             print("Skipping {} as it matches an exclude".format(url))
