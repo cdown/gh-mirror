@@ -43,7 +43,6 @@ def repos(user):
             yield repo
 
 
-
 def repo_already_mirrored(url):
     """
     Check if a repo is already mirrored.
@@ -123,6 +122,7 @@ def remotely_deleted_repos(remote_repos):
     remote_repos = [url.split("/")[-1] for url in remote_repo_urls]
     return [repo for repo in local_repos if repo not in remote_repos]
 
+
 def matches_excludes(url, excludes):
     """
     Return if this URL matches an exclude.
@@ -134,6 +134,7 @@ def matches_excludes(url, excludes):
     base = os.path.basename(url)
     base_without_git = os.path.splitext(base)[0]
     return base in excludes or base_without_git in excludes
+
 
 def update_or_mirror_repos(user, excludes, delete=False):
     """
@@ -163,11 +164,15 @@ def update_or_mirror_repos(user, excludes, delete=False):
         for repo in repos_to_delete:
             shutil.rmtree(repo)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-e", "--exclude", action="append", help="repo names to exclude", default=[])
+    parser.add_argument(
+        "-e", "--exclude", action="append", help="repo names to exclude", default=[]
+    )
     parser.add_argument("username", help="the user's repos to mirror")
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = parse_args()
