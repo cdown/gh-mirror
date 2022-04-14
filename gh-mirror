@@ -123,17 +123,17 @@ def remotely_deleted_repos(remote_repos):
     return [repo for repo in local_repos if repo not in remote_repos]
 
 
-def matches_name_excludes(url, excludes):
+def matches_name(url, basenames):
     """
-    Return if this URL matches an exclude.
+    Return if this URL matches a pattern.
 
-    :param url: The URL to theck
-    :param excludes: Basenames to return True if matching
+    :param url: The URL to check
+    :param basenames: Basenames to return True if matching
     """
 
     base = os.path.basename(url)
     base_without_git = os.path.splitext(base)[0]
-    return base in excludes or base_without_git in excludes
+    return base in basenames or base_without_git in basenames
 
 
 def update_or_mirror_repos(args, delete=False):
@@ -149,13 +149,16 @@ def update_or_mirror_repos(args, delete=False):
     for repo in user_repos:
         url = repo["clone_url"]
 
-        if args.exclude_forks and repo["fork"]:
-            print("Skipping {} as as --exclude-forks was passed".format(url))
-            continue
+        if matches_name(url, args.include):
+            print("Bypassing skip checks for {} as it matches an include".format(url))
+        else:
+            if args.exclude_forks and repo["fork"]:
+                print("Skipping {} as as --exclude-forks was passed".format(url))
+                continue
 
-        if matches_name_excludes(url, args.exclude):
-            print("Skipping {} as it matches an exclude".format(url))
-            continue
+            if matches_name(url, args.exclude):
+                print("Skipping {} as it matches an exclude".format(url))
+                continue
 
         if repo_already_mirrored(url):
             update(repo)
@@ -172,6 +175,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "-e", "--exclude", action="append", help="repo names to exclude", default=[]
+    )
+    parser.add_argument(
+        "-i", "--include", action="append", help="repo names to include", default=[]
     )
     parser.add_argument(
         "-f",
